@@ -1,0 +1,175 @@
+---
+title: "Avacado Sales Data Analysis Poject"
+author: "Benard Mwinzi"
+date: "2023-01-04"
+output: gitub_document
+---
+
+
+# Executive summary
+
+Avocado is one of the most loved fruit in the world. The purpose of this project is to analyze the Avocado sales data using aggregation and visualizations to help understand the customers of the product. The project shall involve cleaning the data to ensure that it is consistent, relevant and complete, and then using the clean data to help answer the following research Questions:
+
+1) In Which region are  Avocado total sale volume high?
+
+2) In which year were avocado sales high?
+
+3) Do high average sales prices help avocado sellers make more money?
+
+4) Which Avocado type high average price?
+
+5) Which Avocado have high total sales amount?
+
+
+# Loading the neccessary libraries and the data
+
+**We first load the libraries**
+
+```{r, echo=TRUE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+```
+
+
+**We now load the data set**
+
+```{r, echo=TRUE}
+data = read.csv("avocado.csv", header = TRUE)
+```
+
+
+# DATA CLEANING
+
+**Having an overview of the data to understand it**
+
+**checking the first few rows of the data**
+```{r, echo=TRUE}
+head(data)
+```
+
+The first view rows of the data help us understand that there are some variables that are not useful in answering our research questions. They need to be dropped from our data set.
+
+**Dropping unnecessary variables**
+
+```{r, echo=TRUE}
+data = subset(data, select = -c(X,X4046, X4225, X4770))
+head(data)
+```
+
+The unnecessary variables have been dropped from the data set. We now check the datatypes in all variables to ensure consistency. 
+
+**Checking the datatypes in the variables**
+
+```{r, echo=TRUE}
+str(data)
+```
+The date variable contains a character variable but it should contain a date datatype. The type and region variables' data should be converted from characters to factor data types. The year variable can be converted from integers to factors too. 
+
+**Converting the date variable from characters to dates**
+
+```{r, echo=TRUE}
+data1=data %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y"))
+str(data1)
+```
+
+The date variable has been changed to a date so it can be analyzed well. We no change the type, region and year variables to factors.
+
+**Converting type, region and year variables to factors**
+
+```{r, echo=TRUE}
+data2 = data1 %>%
+  mutate(type = (as.factor(type))) %>% 
+  mutate(region = (as.factor(region))) %>% 
+  mutate(year = (as.factor(year)))
+str(data2)
+```
+
+Finally to complete the data cleaning and processing, we create the sales Amount variable by multiplying the total sales and the AveragePrice variables.
+
+**Creating the SalesAmount variable**
+
+```{r, echo=TRUE}
+data3 = data2 %>% 
+  mutate(SalesAmount = data2$AveragePrice*data2$Total.Volume)
+head(data3)
+```
+
+# Analyzing the data to answer research questions.
+
+The data is now clean, consistent, complete and relevant. We are no going to analyze it though exploratory data analysis techniques and some inferential statistics to answer the research questions identified above.
+
+
+**1) In Which region  are  Avocado average total sale  volume high?**
+
+```{r, echo=TRUE}
+data3 %>% 
+  group_by(region) %>% 
+  drop_na() %>% 
+  summarize(average_total_sale = mean(SalesAmount)) %>% 
+  arrange(-average_total_sale)
+```
+
+**Insight:** The total sales of the whole country is $ 18 898 204. The highest selling region was California with average sales of $ 3 317 793.
+
+**2) In which year were avocado sales high?**
+
+```{r, echo=TRUE}
+ggplot(data3, aes(x = factor(year), y = Total.Volume, colour = year))+
+  geom_bar(stat = "identity")
+
+```
+
+**Insight:** The highest sales for avocado were made in 2017. The avocado sales were increasing from 2015 to 2017. However, there was an abnormal decrease from 2017 to 2018.
+
+**3)Do high average sales prices help avocado sellers make more money?**
+
+The following scatter plot shows the relationship between sale prices and total amount received from sales.
+
+```{r, echo=TRUE}
+ggplot(data3, aes(x = AveragePrice, y = SalesAmount))+
+  geom_point()
+```
+
+**Insight:** The scatter plot does not reveal a clear relationship between the two variables. we try evaluating the relationship using a linear regression model as shown below. 
+
+```{r, echo=TRUE}
+linear_model = lm(SalesAmount~AveragePrice, data = data3)
+summary(linear_model)
+```
+
+**Insight:** The linear regression model shows that as the average price of Avocados increase, The Total sales reduces since the coefficient of the average price has a negative sign. The p-value of the regression model is 2.2e-16 which is less than the significant level (0.05). Therefore, the relationship between average price and sales amount shown in the regression model is statistically significant. We now create another regression model to investigate if the decrease in total sales as the average price of products increase is caused lower demand as the price increases.
+
+```{r, echo=TRUE}
+linear_model2 = lm(Total.Volume~AveragePrice, data = data3)
+summary(linear_model2)
+```
+
+**Insight:** The linear model shows that there is a statistically significant negative linear relationship between average price and total volume purchased. Therefore, we can conclude that the decrease in Total sales as the average price increases is caused by decreased demand due to an increase in unit price. 
+#4) Which Avocado type high average price?
+
+The following bar chart shows average price by year
+
+```{r, echo=TRUE}
+ggplot(data3, aes(x = factor(type), y = AveragePrice, colour = type))+
+  geom_bar(stat = "identity")
+```
+
+**Insight:** Organic avocados have a high average price than the conventional avocados.
+
+#5) Which Avocado type have high total sales amount?
+
+The following chart shows sales amount by avocado type.
+
+```{r, echo=TRUE}
+ggplot(data3, aes(x = factor(type), y = SalesAmount, colour = type))+
+  geom_bar(stat = "identity")
+```
+
+**Insight:** The chart shows that the conventional avocado type has high sales amount than the organic type.
+
+# Recommendations
+
+The data analysis project shows that although the organic avocado types have a high average price, they have low demand. As a result, business people dealing with organic avocado type are expected to record low sales than those dealing with conventional avocado. 

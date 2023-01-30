@@ -1,0 +1,2 @@
+data =read.csv("E:/Data Science/R/course materials/avocado.csv", header = TRUE")
+str(data)
