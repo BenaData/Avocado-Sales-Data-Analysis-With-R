@@ -12,3 +12,5 @@ Do high average sales prices help avocado sellers make more money?
 Which Avocado type high average price?
 
 Which Avocado have high total sales amount?
+
+link to the project: https://benadata.github.io/Avocado-Sales-Data-Analysis-With-R/
